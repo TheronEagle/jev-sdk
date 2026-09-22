@@ -1,5 +1,5 @@
 {
-  "name": "telemetry-triage-hound",
+  "name": "jev-sdk",
   "version": "1.0.0",
   "type": "module",
   "description": "Load‑balanced real‑time log triage using Vercel AI Gateway Jev.",
@@ -17,12 +17,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/TheronEagle/telemetry-triage-hound.git"
+    "url": "git+https://github.com/TheronEagle/jev-sdk.git"
   },
   "bugs": {
-    "url": "https://github.com/TheronEagle/telemetry-triage-hound/issues"
+    "url": "https://github.com/TheronEagle/jev-sdk/issues"
   },
-  "homepage": "https://github.com/TheronEagle/telemetry-triage-hound#readme",
+  "homepage": "https://github.com/TheronEagle/jev-sdk#readme",
   "keywords": [
     "log",
     "triage",

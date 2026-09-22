@@ -1,4 +1,4 @@
-# jev-triage
+# jev-sdk
 
 A strict TypeScript ESM repository that ingests log streams, evaluates them with Vercel AI Gateway Jev, and triggers high‑priority alerts based on the results.
 
