@@ -2,7 +2,8 @@
   "compilerOptions": {
     "target": "ES2022",
     "module": "ESNext",
-    "moduleResolution": "NodeNext",
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -10,6 +11,6 @@
     "rootDir": "src",
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "src/**/*.test.ts"],
   "exclude": ["node_modules"]
 }

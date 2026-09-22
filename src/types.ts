@@ -14,6 +14,6 @@ export interface JevNoul {
 }
 
 export type JevResponse =
-  | { type: "Choice"; result: JevChoice }
-  | { type: "Score"; result: JevScore }
-  | { type: "Noul"; result: JevNoul };
+  | { type: 'Choice'; result: JevChoice }
+  | { type: 'Score'; result: JevScore }
+  | { type: 'Noul'; result: JevNoul };

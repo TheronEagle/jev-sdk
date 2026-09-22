@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { randomUUID } from 'node:crypto';
 export async function generateMockLogs() {
   const logs: string[] = [];
   for (let i = 0; i < 500; i++) {

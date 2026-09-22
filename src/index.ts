@@ -1,6 +1,6 @@
 import express from "express";
 import { triageLogBatch } from "./services/jevEngine";
-import { address } from "node:os";
+import type { JevScore, JevChoice } from "./types";
 
 const app = express();
 app.use(express.json());
@@ -12,8 +12,8 @@ app.post("/logs", async (req, res) => {
   }
   try {
     const results = await triageLogBatch(logs);
-    const score = (results["Score"] as { type: "Score"; result: JevScore }).result.blastRadius;
-    const securityProb = (results["Choice"] as { type: "Choice"; result: JevChoice }).result.probability;
+    const score = (results['Score'] as { type: 'Score'; result: JevScore }).result.blastRadius;
+    const securityProb = (results['Choice'] as { type: 'Choice'; result: JevChoice }).result.probability;
     if (score > 4.0 || securityProb > 0.85) {
       // high‑priority short‑circuit
       process.exit(1);
@@ -21,7 +21,7 @@ app.post("/logs", async (req, res) => {
     res.json(results);
   } catch (e: any) {
     console.error(e);
-    res.status(500).send({ error: e.message });
+    res.status(500).send({ error: (e as any).message });
   }
 });
 

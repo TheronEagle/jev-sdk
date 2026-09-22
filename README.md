@@ -3,6 +3,7 @@
 A strict TypeScript ESM repository that ingests log streams, evaluates them with Vercel AI Gateway Jev, and triggers high‑priority alerts based on the results.
 
 ## Features
+
 - **TypeScript** with strict mode and ESM support.
 - **Jev Engine**: Three parallel evaluation heads – `score`, `choice`, and `noul`.
 - **Express API**: `/logs` endpoint accepts an array of log strings.
@@ -11,6 +12,7 @@ A strict TypeScript ESM repository that ingests log streams, evaluates them with
 - **Production‑ready**: Includes `package.json`, `tsconfig.json`, and a README.
 
 ## Setup
+
 ```bash
 # Install dependencies
 npm install
