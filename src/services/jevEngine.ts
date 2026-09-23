@@ -1,10 +1,10 @@
-import fetch from "node-fetch";
-import type { JevResponse, JevNoul } from "./types";
+import fetch from 'node-fetch';
+import type { JevResponse, JevScore, JevChoice, JevNoul } from '../types.ts';
 
 const JEV_API_URL = 'https://gateway.vercel.ai/api/';
 const JEV_API_KEY = process.env.VERCEL_JEV_API_KEY as string;
 
-async function postJev(endpoint: string, payload: string[]) {
+async function postJev<T extends JevResponse>(endpoint: string, payload: string[]): Promise<T> {
   const res = await fetch(JEV_API_URL + endpoint, {
     method: 'POST',
     headers: {
@@ -14,14 +14,14 @@ async function postJev(endpoint: string, payload: string[]) {
     body: JSON.stringify({ logs: payload }),
   });
   if (!res.ok) throw new Error(`Jev request failed ${res.status}`);
-  return (await res.json()) as any;
+  return (await res.json()) as T;
 }
 
 export async function triageLogBatch(logs: string[]) {
   const [scoreRes, choiceRes, noulRes] = await Promise.all([
-    postJev('score', logs),
-    postJev('choice', logs),
-    postJev('noul', logs),
+    postJev<JevResponse & { type: 'Score'; result: JevScore }>('score', logs),
+    postJev<JevResponse & { type: 'Choice'; result: JevChoice }>('choice', logs),
+    postJev<JevResponse & { type: 'Noul'; result: JevNoul }>('noul', logs),
   ]);
 
   const results: Record<string, JevResponse> = {};
@@ -29,8 +29,7 @@ export async function triageLogBatch(logs: string[]) {
   results[choiceRes.type] = { type: 'Choice', result: choiceRes.result };
 
   try {
-    const noul = noulRes.result as JevNoul;
-    results[noulRes.type] = { type: 'Noul', result: noul };
+    results[noulRes.type] = { type: 'Noul', result: noulRes.result };
   } catch {
     results[noulRes.type] = { type: 'Noul', result: { unique: false, description: '' } };
   }
