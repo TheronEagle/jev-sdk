@@ -408,7 +408,8 @@
             alert('Please enter your VERCEL_JEV_API_KEY for API mode');
             return;
           }
-          const res = await fetch('https://gateway.vercel.ai/api/triage', {
+          // Call the demo backend (run locally: npm run demo-server)
+          const res = await fetch('http://localhost:3001/api/triage', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -416,7 +417,10 @@
             },
             body: JSON.stringify({ logs })
           });
-          if (!res.ok) throw new Error(`API error: ${res.status}`);
+          if (!res.ok) {
+            const err = await res.text();
+            throw new Error(`API error: ${res.status} ${err}`);
+          }
           results = await res.json();
         }
 

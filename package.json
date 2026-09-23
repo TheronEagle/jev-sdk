@@ -10,6 +10,7 @@
     "lint": "eslint . --ext .ts",
     "format": "prettier --write \"**/*.{ts,md,json}\"",
     "test": "jest",
+    "demo-server": "ts-node src/demo-server.ts",
     "prepare": "npm run lint && npm run format"
   },
   "publishConfig": {
@@ -34,6 +35,8 @@
   "author": "Corey Mitchell",
   "license": "MIT",
   "dependencies": {
+    "@types/cors": "^2.8.19",
+    "cors": "^2.8.6",
     "express": "^4.18.2",
     "node-fetch": "^3.3.2"
   },

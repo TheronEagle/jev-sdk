@@ -1,0 +1,71 @@
+name: ✨ Feature Request
+description: Suggest a new feature or enhancement
+title: "[FEATURE] "
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a feature! Please describe your idea below.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: What problem does this solve? Why is it needed?
+      placeholder: "Currently there's no way to stream logs in real-time..."
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe your ideal implementation
+      placeholder: "Add a WebSocket endpoint that accepts streaming logs and returns triage results incrementally..."
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Other approaches you've thought about
+      placeholder: "Could use Server-Sent Events instead of WebSockets..."
+    validations:
+      required: false
+  - type: textarea
+    id: use-cases
+    attributes:
+      label: Use Cases
+      description: Who would benefit and how?
+      placeholder: "Teams running high-volume log pipelines who need sub-second triage..."
+    validations:
+      required: true
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - Low (nice to have)
+        - Medium (would improve workflow)
+        - High (blocking a use case)
+        - Critical (security/performance issue)
+    validations:
+      required: true
+  - type: checkboxes
+    id: willingness
+    attributes:
+      label: Contribution
+      options:
+        - label: I'm willing to implement this feature
+          required: false
+        - label: I can help with testing/documentation
+          required: false
+        - label: I'd like to discuss before implementing
+          required: false
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Links, mockups, related issues, etc.
+      placeholder: "Related to #123..."
+    validations:
+      required: false

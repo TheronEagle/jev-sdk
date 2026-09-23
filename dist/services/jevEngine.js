@@ -1,4 +1,4 @@
-import fetch from "node-fetch";
+import fetch from 'node-fetch';
 const JEV_API_URL = 'https://gateway.vercel.ai/api/';
 const JEV_API_KEY = process.env.VERCEL_JEV_API_KEY;
 async function postJev(endpoint, payload) {
