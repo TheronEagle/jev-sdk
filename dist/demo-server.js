@@ -21,10 +21,11 @@ app.post("/api/triage", async (req, res) => {
     }
     catch (e) {
         console.error(e);
-        res.status(500).json({ error: e.message });
+        res.status(500).json({ error: e instanceof Error ? e.message : String(e) });
     }
 });
 const port = process.env.PORT || 3001;
 app.listen(port, () => {
     console.log(`jev-sdk demo backend listening on ${port}`);
 });
+//# sourceMappingURL=demo-server.js.map

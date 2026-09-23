@@ -9,3 +9,4 @@ export async function generateMockLogs() {
     }
     return logs;
 }
+//# sourceMappingURL=mockStream.js.map

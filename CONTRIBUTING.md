@@ -19,7 +19,7 @@ git checkout -b feat/your-feature-name
 # 5. Make changes, add tests, run checks
 npm test && npm run lint
 
-# 6. Push and open a PR
+# 6. Push
 git push origin feat/your-feature-name
 ```
 
@@ -85,7 +85,7 @@ npm test -- --coverage
 
 ## 🐛 Reporting Bugs
 
-Use the bug report template (`.github/ISSUE_TEMPLATE/bug_report.yml`). Include:
+Use the GitHub issue template. Include:
 - Clear reproduction steps
 - Expected vs actual behavior
 - Environment (Node version, OS)

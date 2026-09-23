@@ -136,7 +136,7 @@ Features:
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-1. Fork & branch: `git checkout -b feat/amazing-feature`
+1. Fork & branch: `git checkout -b feat/your-feature-name`
 2. Add tests for new logic
 3. Run `npm test && npm run lint`
 4. Open PR with clear description

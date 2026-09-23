@@ -7,10 +7,12 @@
   "scripts": {
     "dev": "ts-node src/index.ts",
     "build": "tsc",
+    "build:lib": "tsc -p tsconfig.lib.json",
     "lint": "eslint . --ext .ts",
     "format": "prettier --write \"**/*.{ts,md,json}\"",
     "test": "jest",
     "demo-server": "ts-node src/demo-server.ts",
+    "benchmark": "node benchmarks/performance.js",
     "prepare": "npm run lint && npm run format"
   },
   "publishConfig": {

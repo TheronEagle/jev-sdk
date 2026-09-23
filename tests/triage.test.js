@@ -55,6 +55,12 @@ describe('jev-sdk triage logic', () => {
       const result = await mockTriageLogBatch(logs);
       expect(result.Score.result.blastRadius).toBeGreaterThanOrEqual(4);
     });
+
+    it('returns high confidence for known patterns', async () => {
+      const logs = ['INFO Normal operation'];
+      const result = await mockTriageLogBatch(logs);
+      expect(result.Score.result.confidence).toBeGreaterThan(0.8);
+    });
   });
 
   describe('Choice head', () => {
@@ -82,6 +88,12 @@ describe('jev-sdk triage logic', () => {
       const result = await mockTriageLogBatch(logs);
       expect(result.Choice.result.team).toBe('Infra');
     });
+
+    it('assigns high probability to Security team', async () => {
+      const logs = ['ERROR Security breach detected'];
+      const result = await mockTriageLogBatch(logs);
+      expect(result.Choice.result.probability).toBeGreaterThan(0.9);
+    });
   });
 
   describe('Noul head', () => {
@@ -95,6 +107,12 @@ describe('jev-sdk triage logic', () => {
       const logs = ['INFO Normal operation'];
       const result = await mockTriageLogBatch(logs);
       expect(result.Noul.result.unique).toBe(false);
+    });
+
+    it('provides description for unique anomalies', async () => {
+      const logs = ['WARN Anomaly: never seen pattern'];
+      const result = await mockTriageLogBatch(logs);
+      expect(result.Noul.result.description).toContain('Pattern not seen in last 30 days');
     });
   });
 
@@ -121,6 +139,14 @@ describe('jev-sdk triage logic', () => {
       const shouldExit = result.Score.result.blastRadius > 4.0 || 
                          (result.Choice.result.team === 'Security' && result.Choice.result.probability > 0.85);
       expect(shouldExit).toBe(false);
+    });
+
+    it('triggers on high blast radius and Security team', async () => {
+      const logs = ['ERROR Security breach detected'];
+      const result = await mockTriageLogBatch(logs);
+      const shouldExit = result.Score.result.blastRadius > 4.0 || 
+                         (result.Choice.result.team === 'Security' && result.Choice.result.probability > 0.85);
+      expect(shouldExit).toBe(true);
     });
   });
 });
