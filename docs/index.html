@@ -13,6 +13,7 @@
       --muted: #94a3b8;
       --error: #f87171;
       --success: #34d399;
+      --warning: #fbbf24;
     }
     * { box-sizing: border-box; }
     body {
@@ -33,7 +34,7 @@
       font-size: 2.5rem;
     }
     header p { color: var(--muted); margin-top: 0.5rem; }
-    main { max-width: 800px; margin: 2rem auto; padding: 0 1rem; }
+    main { max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
     .card {
       background: var(--card);
       border-radius: 12px;
@@ -41,8 +42,13 @@
       margin-bottom: 1.5rem;
     }
     .card h2 { margin-top: 0; color: var(--accent); }
-    textarea, input {
-      width: 100%;
+    .controls {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+    textarea, input, select {
       background: var(--bg);
       color: var(--text);
       border: 1px solid var(--muted);
@@ -50,8 +56,10 @@
       padding: 0.75rem;
       font-family: monospace;
       font-size: 0.9rem;
-      margin-bottom: 1rem;
     }
+    textarea { width: 100%; min-height: 120px; resize: vertical; }
+    input { flex: 1; min-width: 200px; }
+    select { min-width: 180px; }
     button {
       background: var(--accent);
       color: var(--bg);
@@ -64,6 +72,7 @@
     }
     button:hover { opacity: 0.9; }
     button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-secondary { background: var(--muted); color: var(--bg); }
     .result {
       background: var(--bg);
       border-radius: 8px;
@@ -72,87 +81,361 @@
       font-family: monospace;
       font-size: 0.85rem;
       white-space: pre-wrap;
-      max-height: 300px;
+      max-height: 400px;
       overflow-y: auto;
     }
     .badge {
       display: inline-block;
-      background: var(--accent);
-      color: var(--bg);
       padding: 0.25rem 0.75rem;
       border-radius: 20px;
       font-size: 0.8rem;
-      margin-left: 0.5rem;
+      font-weight: 600;
     }
+    .badge-score { background: var(--accent); color: var(--bg); }
+    .badge-security { background: var(--error); color: #fff; }
+    .badge-noul { background: var(--warning); color: var(--bg); }
+    .badge-team { background: var(--success); color: var(--bg); }
+    .alert {
+      padding: 1rem;
+      border-radius: 8px;
+      margin: 1rem 0;
+      display: none;
+    }
+    .alert.high { background: rgba(248, 113, 113, 0.2); border: 1px solid var(--error); display: block; }
+    .alert.normal { background: rgba(52, 211, 153, 0.2); border: 1px solid var(--success); display: block; }
     .hidden { display: none; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem; }
+    .stat { background: var(--bg); padding: 1rem; border-radius: 8px; text-align: center; }
+    .stat-value { font-size: 2rem; font-weight: 700; color: var(--accent); }
+    .stat-label { font-size: 0.85rem; color: var(--muted); }
+    .log-entry { padding: 0.5rem; margin: 0.25rem 0; border-radius: 4px; font-family: monospace; font-size: 0.85rem; }
+    .log-entry.error { background: rgba(248, 113, 113, 0.2); border-left: 3px solid var(--error); }
+    .log-entry.warn { background: rgba(251, 191, 36, 0.2); border-left: 3px solid var(--warning); }
+    .log-entry.info { background: rgba(56, 189, 248, 0.1); border-left: 3px solid var(--accent); }
+    .tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+    .tab { padding: 0.5rem 1rem; background: var(--bg); border: 1px solid var(--muted); border-radius: 8px; cursor: pointer; }
+    .tab.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
   </style>
 </head>
 <body>
   <header>
     <h1>jev-sdk <span class="badge">Demo</span></h1>
-    <p>Real-time log triage using Vercel AI Gateway Jev</p>
+    <p>Real-time log triage using Vercel AI Gateway Jev — Client-side simulation</p>
   </header>
 
   <main>
     <div class="card">
-      <h2>1. Configure</h2>
-      <input type="password" id="apiKey" placeholder="VERCEL_JEV_API_KEY (optional for demo)" />
+      <h2>🎛️ Configuration</h2>
+      <div class="controls">
+        <select id="mode">
+          <option value="mock">Mock Mode (no API key needed)</option>
+          <option value="api">Real API Mode (requires VERCEL_JEV_API_KEY)</option>
+        </select>
+        <input type="password" id="apiKey" placeholder="VERCEL_JEV_API_KEY" style="display:none;" />
+      </div>
+      <p style="color: var(--muted); font-size: 0.9rem;">
+        Mock mode simulates Jev responses instantly. API mode calls the real Vercel AI Gateway.
+      </p>
     </div>
 
     <div class="card">
-      <h2>2. Enter Logs</h2>
-      <textarea id="logs" rows="6">INFO 2024-01-15T10:30:00Z [api-gateway] Request processed successfully
-ERROR 2024-01-15T10:31:00Z [database] Connection timeout to replica-3
-WARN 2024-01-15T10:32:00Z [cache] Cache miss ratio above threshold</textarea>
-      <button id="triageBtn">Triage Batch</button>
+      <h2>📝 Log Input</h2>
+      <div class="controls">
+        <button id="loadSample" class="btn-secondary">Load Sample Logs</button>
+        <button id="clearLogs" class="btn-secondary">Clear</button>
+      </div>
+      <textarea id="logs" rows="8" placeholder="Paste your logs here (one per line)..."></textarea>
+      <div class="controls">
+        <button id="triageBtn">🔍 Triage Batch</button>
+        <span id="logCount" style="align-self: center; color: var(--muted);"></span>
+      </div>
     </div>
 
     <div class="card hidden" id="resultCard">
-      <h2>3. Results</h2>
-      <div class="result" id="result"></div>
+      <h2>📊 Triage Results</h2>
+      <div class="grid" id="summary"></div>
+      
+      <div id="highAlert" class="alert high">
+        ⚠️ <strong>HIGH PRIORITY ALERT</strong> — Score > 4.0 or Security > 0.85 detected! Process would exit(1).
+      </div>
+      <div id="normalAlert" class="alert normal">
+        ✅ Normal priority — No immediate action required.
+      </div>
+
+      <div class="tabs">
+        <button class="tab active" data-tab="details">Details</button>
+        <button class="tab" data-tab="logs">Annotated Logs</button>
+        <button class="tab" data-tab="raw">Raw JSON</button>
+      </div>
+
+      <div class="tab-panel active" id="panel-details">
+        <div class="result" id="result"></div>
+      </div>
+      <div class="tab-panel" id="panel-logs">
+        <div class="result" id="annotatedLogs" style="max-height: 300px;"></div>
+      </div>
+      <div class="tab-panel" id="panel-raw">
+        <div class="result" id="rawJson"></div>
+      </div>
     </div>
 
     <div class="card">
-      <h2>How it works</h2>
-      <p>The <code>jev-sdk</code> sends logs to three parallel evaluation heads:</p>
-      <ul>
-        <li><strong>Score</strong> – Blast radius (1–5)</li>
-        <li><strong>Choice</strong> – Owning team (Infra, Core-API, Frontend, Security)</li>
-        <li><strong>Noul</strong> – Is this a unique anomaly?</li>
+      <h2>🧪 Quick Test Scenarios</h2>
+      <p style="color: var(--muted); margin-bottom: 1rem;">Click to populate the log input with test cases:</p>
+      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <button class="btn-secondary" data-scenario="normal">Normal Operations</button>
+        <button class="btn-secondary" data-scenario="db-error">DB Connection Storm</button>
+        <button class="btn-secondary" data-scenario="security">Security Breach Attempt</button>
+        <button class="btn-secondary" data-scenario="mixed">Mixed Severity</button>
+        <button class="btn-secondary" data-scenario="anomaly">Unique Anomaly</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>📚 How it works</h2>
+      <div class="grid">
+        <div class="stat"><div class="stat-value">1</div><div class="stat-label">Score Head</div></div>
+        <div class="stat"><div class="stat-value">2</div><div class="stat-label">Choice Head</div></div>
+        <div class="stat"><div class="stat-value">3</div><div class="stat-label">Noul Head</div></div>
+      </div>
+      <ul style="margin-top: 1rem; color: var(--muted);">
+        <li><strong>Score</strong> — Blast radius 1–5 (confidence 0–1)</li>
+        <li><strong>Choice</strong> — Owning team: Infra, Core-API, Frontend, Security (probability 0–1)</li>
+        <li><strong>Noul</strong> — Is this a unique anomaly? (boolean + description)</li>
+        <li><strong>Short-circuit</strong> — Exits with code 1 if Score > 4.0 OR Security probability > 0.85</li>
       </ul>
-      <p>If Score &gt; 4.0 or Security probability &gt; 0.85, the process exits with code 1 (high-priority alert).</p>
     </div>
   </main>
 
   <script>
+    // Mock Jev responses based on log content
+    function mockJevResponse(logs) {
+      const results = { Score: null, Choice: null, Noul: null };
+      
+      // Analyze logs for patterns
+      const hasDbError = logs.some(l => /database|db|connection/i.test(l));
+      const hasSecurity = logs.some(l => /security|breach|attack|unauthorized|injection/i.test(l));
+      const hasAnomaly = logs.some(l => /anomaly|unique|never seen|strange/i.test(l));
+      const errorCount = logs.filter(l => /error|fail|exception/i.test(l)).length;
+      const warnCount = logs.filter(l => /warn/i.test(l)).length;
+      
+      // Score: blast radius based on severity
+      let blastRadius = 1;
+      let confidence = 0.5;
+      if (hasSecurity) { blastRadius = 5; confidence = 0.95; }
+      else if (hasDbError && errorCount > 3) { blastRadius = 4.5; confidence = 0.85; }
+      else if (errorCount > 0) { blastRadius = 3 + Math.min(errorCount * 0.3, 1.5); confidence = 0.7; }
+      else if (warnCount > 0) { blastRadius = 2; confidence = 0.6; }
+      else { blastRadius = 1; confidence = 0.9; }
+      
+      // Choice: owning team
+      let team = 'Infra';
+      let prob = 0.6;
+      if (hasSecurity) { team = 'Security'; prob = 0.92; }
+      else if (hasDbError) { team = 'Core-API'; prob = 0.78; }
+      else if (logs.some(l => /frontend|ui|browser|css|js/i.test(l))) { team = 'Frontend'; prob = 0.72; }
+      
+      // Noul: unique anomaly
+      const unique = hasAnomaly || (hasSecurity && Math.random() > 0.5);
+      
+      results.Score = { type: 'Score', result: { blastRadius: Math.min(5, blastRadius), confidence } };
+      results.Choice = { type: 'Choice', result: { team, probability: prob } };
+      results.Noul = { type: 'Noul', result: { unique, description: unique ? 'Pattern not seen in last 30 days' : 'Matches known pattern' } };
+      
+      return results;
+    }
+
+    // Annotate logs with severity
+    function annotateLogs(logs, results) {
+      return logs.map(line => {
+        let cls = 'info';
+        if (/error|fail|exception/i.test(line)) cls = 'error';
+        else if (/warn/i.test(line)) cls = 'warn';
+        return `<div class="log-entry ${cls}">${escapeHtml(line)}</div>`;
+      }).join('');
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function updateLogCount() {
+      const lines = document.getElementById('logs').value.split('\n').filter(l => l.trim()).length;
+      document.getElementById('logCount').textContent = `${lines} log${lines !== 1 ? 's' : ''}`;
+    }
+
+    function showResults(results) {
+      document.getElementById('resultCard').classList.remove('hidden');
+      
+      // Summary stats
+      const score = results.Score.result;
+      const choice = results.Choice.result;
+      const noul = results.Noul.result;
+      
+      document.getElementById('summary').innerHTML = `
+        <div class="stat">
+          <div class="stat-value">${score.blastRadius.toFixed(1)}</div>
+          <div class="stat-label"><span class="badge badge-score">Score</span> Blast Radius</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">${(score.confidence * 100).toFixed(0)}%</div>
+          <div class="stat-label">Confidence</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">${choice.team}</div>
+          <div class="stat-label"><span class="badge badge-team">Team</span> Owner</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">${(choice.probability * 100).toFixed(0)}%</div>
+          <div class="stat-label">Probability</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">${noul.unique ? 'Yes' : 'No'}</div>
+          <div class="stat-label"><span class="badge badge-noul">Noul</span> Unique</div>
+        </div>
+      `;
+      
+      // Alert
+      const highPriority = score.blastRadius > 4.0 || (choice.team === 'Security' && choice.probability > 0.85);
+      document.getElementById('highAlert').style.display = highPriority ? 'block' : 'none';
+      document.getElementById('normalAlert').style.display = highPriority ? 'none' : 'block';
+      
+      // Details
+      document.getElementById('result').textContent = JSON.stringify(results, null, 2);
+      document.getElementById('rawJson').textContent = JSON.stringify(results, null, 2);
+    }
+
+    // Scenarios
+    const scenarios = {
+      normal: [
+        'INFO 2024-01-15T10:30:00Z [api-gateway] Request processed successfully',
+        'INFO 2024-01-15T10:30:01Z [auth] Token validated for user_123',
+        'INFO 2024-01-15T10:30:02Z [cache] Cache hit ratio 94.2%',
+        'INFO 2024-01-15T10:30:03Z [metrics] Latency p99: 45ms'
+      ],
+      'db-error': [
+        'ERROR 2024-01-15T10:31:00Z [database] Connection timeout to replica-3',
+        'ERROR 2024-01-15T10:31:05Z [database] Connection timeout to replica-1',
+        'ERROR 2024-01-15T10:31:10Z [database] Connection timeout to replica-2',
+        'ERROR 2024-01-15T10:31:15Z [database] All replicas unreachable',
+        'WARN 2024-01-15T10:31:20Z [api-gateway] Falling back to read-only mode'
+      ],
+      security: [
+        'WARN 2024-01-15T10:32:00Z [auth] Failed login attempt from 192.168.1.100',
+        'WARN 2024-01-15T10:32:01Z [auth] Failed login attempt from 192.168.1.100',
+        'ERROR 2024-01-15T10:32:05Z [security] SQL injection attempt detected in /api/users',
+        'ERROR 2024-01-15T10:32:10Z [security] Unauthorized admin access attempt',
+        'CRITICAL 2024-01-15T10:32:15Z [security] Potential data exfiltration in progress'
+      ],
+      mixed: [
+        'INFO 2024-01-15T10:30:00Z [api-gateway] Health check passed',
+        'WARN 2024-01-15T10:30:05Z [cache] Cache miss ratio above threshold',
+        'ERROR 2024-01-15T10:30:10Z [database] Deadlock detected on orders table',
+        'INFO 2024-01-15T10:30:15Z [frontend] Page load complete 1.2s',
+        'WARN 2024-01-15T10:30:20Z [queue] Job queue depth: 1,247'
+      ],
+      anomaly: [
+        'INFO 2024-01-15T10:30:00Z [api-gateway] Request processed',
+        'WARN 2024-01-15T10:30:01Z [unknown] Anomaly detected: request size 0 bytes',
+        'ERROR 2024-01-15T10:30:02Z [unknown] Unique pattern: header "X-Ghost" never seen before',
+        'INFO 2024-01-15T10:30:03Z [metrics] Normal operation resumed'
+      ]
+    };
+
+    // Event listeners
+    document.getElementById('logs').addEventListener('input', updateLogCount);
+    
+    document.getElementById('mode').addEventListener('change', (e) => {
+      document.getElementById('apiKey').style.display = e.target.value === 'api' ? 'block' : 'none';
+    });
+
+    document.getElementById('loadSample').addEventListener('click', () => {
+      document.getElementById('logs').value = scenarios.normal.join('\n');
+      updateLogCount();
+    });
+
+    document.getElementById('clearLogs').addEventListener('click', () => {
+      document.getElementById('logs').value = '';
+      updateLogCount();
+      document.getElementById('resultCard').classList.add('hidden');
+    });
+
+    document.querySelectorAll('[data-scenario]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.getElementById('logs').value = scenarios[btn.dataset.scenario].join('\n');
+        updateLogCount();
+      });
+    });
+
+    // Tab switching
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+      });
+    });
+
+    // Main triage function
     document.getElementById('triageBtn').addEventListener('click', async () => {
       const logsText = document.getElementById('logs').value;
+      const mode = document.getElementById('mode').value;
       const apiKey = document.getElementById('apiKey').value;
       const logs = logsText.split('\n').filter(l => l.trim());
 
+      if (logs.length === 0) {
+        alert('Please enter some logs first');
+        return;
+      }
+
       const btn = document.getElementById('triageBtn');
       btn.disabled = true;
-      btn.textContent = 'Triaging...';
+      btn.textContent = mode === 'mock' ? 'Simulating...' : 'Calling API...';
 
       try {
-        // In a real app, you'd call the SDK from a backend.
-        // This demo uses a simple fetch to a local server or mock.
-        const res = await fetch('/logs', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ logs })
-        });
-        const data = await res.json();
-        document.getElementById('result').textContent = JSON.stringify(data, null, 2);
-        document.getElementById('resultCard').classList.remove('hidden');
+        let results;
+        if (mode === 'mock') {
+          // Simulate network delay
+          await new Promise(r => setTimeout(r, 500));
+          results = mockJevResponse(logs);
+        } else {
+          if (!apiKey) {
+            alert('Please enter your VERCEL_JEV_API_KEY for API mode');
+            return;
+          }
+          const res = await fetch('https://gateway.vercel.ai/api/triage', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({ logs })
+          });
+          if (!res.ok) throw new Error(`API error: ${res.status}`);
+          results = await res.json();
+        }
+
+        showResults(results);
+        document.getElementById('annotatedLogs').innerHTML = annotateLogs(logs, results);
+
       } catch (err) {
-        document.getElementById('result').textContent = 'Error: ' + err.message;
         document.getElementById('resultCard').classList.remove('hidden');
+        document.getElementById('result').textContent = 'Error: ' + err.message;
+        document.getElementById('highAlert').style.display = 'none';
+        document.getElementById('normalAlert').style.display = 'none';
       } finally {
         btn.disabled = false;
-        btn.textContent = 'Triage Batch';
+        btn.textContent = '🔍 Triage Batch';
       }
     });
+
+    // Initialize
+    updateLogCount();
   </script>
 </body>
 </html>
