@@ -131,12 +131,16 @@
       <div class="controls">
         <select id="mode">
           <option value="mock">Mock Mode (no API key needed)</option>
-          <option value="api">Real API Mode (requires VERCEL_JEV_API_KEY)</option>
+          <option value="api-local">Real API (Local Demo Server)</option>
+          <option value="api-remote">Real API (Deployed Demo Server)</option>
         </select>
-        <input type="password" id="apiKey" placeholder="VERCEL_JEV_API_KEY" style="display:none;" />
+        <input type="password" id="apiKey" placeholder="VERCEL_JEV_API_KEY" />
+        <input type="url" id="apiEndpoint" placeholder="Demo server URL (e.g., https://jev-sdk-demo.vercel.app)" style="display:none;" />
       </div>
       <p style="color: var(--muted); font-size: 0.9rem;">
-        Mock mode simulates Jev responses instantly. API mode calls the real Vercel AI Gateway.
+        <strong>Mock Mode:</strong> Instant simulated responses, no API key needed.<br>
+        <strong>Local:</strong> Run <code>npm run demo-server</code> in project root (port 3001).<br>
+        <strong>Remote:</strong> Deploy <code>demo-server/</code> to Vercel/Railway/Render and paste the URL above.
       </p>
     </div>
 
@@ -350,7 +354,9 @@
     document.getElementById('logs').addEventListener('input', updateLogCount);
     
     document.getElementById('mode').addEventListener('change', (e) => {
-      document.getElementById('apiKey').style.display = e.target.value === 'api' ? 'block' : 'none';
+      const isRemote = e.target.value === 'api-remote';
+      document.getElementById('apiKey').style.display = e.target.value === 'mock' ? 'none' : 'block';
+      document.getElementById('apiEndpoint').style.display = isRemote ? 'block' : 'none';
     });
 
     document.getElementById('loadSample').addEventListener('click', () => {
@@ -403,13 +409,32 @@
           // Simulate network delay
           await new Promise(r => setTimeout(r, 500));
           results = mockJevResponse(logs);
-        } else {
+        } else if (mode === 'api-local') {
           if (!apiKey) {
             alert('Please enter your VERCEL_JEV_API_KEY for API mode');
             return;
           }
-          // Call the demo backend (run locally: npm run demo-server)
+          // Call the local demo backend (run: npm run demo-server)
           const res = await fetch('http://localhost:3001/api/triage', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({ logs })
+          });
+          if (!res.ok) {
+            const err = await res.text();
+            throw new Error(`API error: ${res.status} ${err}`);
+          }
+          results = await res.json();
+        } else if (mode === 'api-remote') {
+          if (!apiKey) {
+            alert('Please enter your VERCEL_JEV_API_KEY for API mode');
+            return;
+          }
+          const endpoint = document.getElementById('apiEndpoint').value.trim() || 'https://jev-sdk-demo.vercel.app';
+          const res = await fetch(`${endpoint.replace(/\/$/, '')}/api/triage`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
